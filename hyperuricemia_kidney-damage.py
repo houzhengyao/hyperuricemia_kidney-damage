@@ -92,7 +92,7 @@ colors_dict = {
 # Pipeline execution switch:
 # False: Full initial run (data filtering, splitting, MICE imputation)
 # True: Resume modeling directly using imputed datasets
-USE_EXISTING_IMPUTED = True
+USE_EXISTING_IMPUTED = False
 
 desktop = r'C:\Users\57808\Desktop\近期工作\论文\高尿酸血症\数据\分类机器学习\English'
 
@@ -404,7 +404,8 @@ continuous_cols_raw = []
 for i, col in enumerate(var_names):
     if i < 2:
         continue
-    if str(var_types[i]).strip() in ['连续', 'continuous', 'Continuous']:
+    val_type_str = str(var_types[i]).strip().lower()
+    if val_type_str in ['continuous', '连续', 'numeric']:
         continuous_cols_raw.append(col)
 
 continuous_cols_selected = [col for col in boruta_selected if col in continuous_cols_raw]

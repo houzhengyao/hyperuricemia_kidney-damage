@@ -94,13 +94,13 @@ colors_dict = {
 # True: Resume modeling directly using imputed datasets
 USE_EXISTING_IMPUTED = False
 
-desktop = r'C:\Users\57808\Desktop\近期工作\论文\高尿酸血症\数据\分类机器学习\English'
+desktop = r'C:\Users\57808\Desktop\English'
 
 if not USE_EXISTING_IMPUTED:
     # ==================================================================
     # Step 1: Data Partitioning and Quality Control Preprocessing
     # ==================================================================
-    input_path = os.path.join(desktop, '0.5-year group.xlsx')
+    input_path = os.path.join(desktop, 'Synthetic data.xlsx')
     df_raw = pd.read_excel(input_path, header=None)
 
     var_types = df_raw.iloc[0, :].tolist()

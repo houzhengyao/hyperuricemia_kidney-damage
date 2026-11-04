@@ -94,7 +94,7 @@ colors_dict = {
 # True: Resume modeling directly using imputed datasets
 USE_EXISTING_IMPUTED = False
 
-desktop = r'C:\Users\57808\Desktop\近期工作\论文\高尿酸血症\数据\分类机器学习\English'
+desktop = r'C:\Users\57808\Desktop\English'
 
 if not USE_EXISTING_IMPUTED:
     # ==================================================================

@@ -42,7 +42,8 @@ from sklearn.metrics import (
     accuracy_score,
     f1_score,
     recall_score,
-    confusion_matrix
+    confusion_matrix,
+    brier_score_loss,
 )
 
 import torch
@@ -92,7 +93,7 @@ colors_dict = {
 # Pipeline execution switch:
 # False: Full initial run (data filtering, splitting, MICE imputation)
 # True: Resume modeling directly using imputed datasets
-USE_EXISTING_IMPUTED = False
+USE_EXISTING_IMPUTED = True
 
 desktop = r'C:\Users\57808\Desktop\English'
 
@@ -724,6 +725,17 @@ df_train_config.to_excel(train_config_path, index=False)
 # ----------------------------------------------------------------------
 # Step 6: Final Model Evaluation, Retraining, and Bootstrap 95% CIs
 # ----------------------------------------------------------------------
+def calc_calibration_metrics(y_true, y_pred_proba):
+  brier = brier_score_loss(y_true, y_pred_proba)
+  p_clip = np.clip(y_pred_proba, 1e-6, 1.0 - 1e-6)
+  logit_p = np.log(p_clip / (1.0 - p_clip))
+  X_cal = sm.add_constant(logit_p)
+  try:
+    model_cal = sm.Logit(y_true, X_cal).fit(disp=False)
+    intercept, slope = model_cal.params[0], model_cal.params[1]
+  except Exception:
+    intercept, slope = np.nan, np.nan
+  return brier, intercept, slope
 def find_optimal_threshold(y_true, y_pred_proba):
     fpr, tpr, thresholds = roc_curve(y_true, y_pred_proba)
     youden_indices = tpr - fpr
@@ -1015,6 +1027,9 @@ for name, (model_class, _) in models_info.items():
         random_state=RANDOM_STATE
     )
 
+    train_brier, train_int, train_slope = calc_calibration_metrics(np.array(oof_y_true), np.array(oof_y_pred_proba))
+    test_brier, test_int, test_slope = calc_calibration_metrics(y_test, y_pred_proba_test)
+
     display_name = 'LR' if name == 'Logistic' else name
 
     # Record Training Set Performance (95% CIs)
@@ -1027,6 +1042,9 @@ for name, (model_class, _) in models_info.items():
         'F1-Score': f"{train_summary['F1'][0]:.4f} (95% CI: {train_cis['F1'][0]:.4f}–{train_cis['F1'][1]:.4f})",
         'Sensitivity': f"{train_summary['Sensitivity'][0]:.4f} (95% CI: {train_cis['Sensitivity'][0]:.4f}–{train_cis['Sensitivity'][1]:.4f})",
         'Specificity': f"{train_summary['Specificity'][0]:.4f} (95% CI: {train_cis['Specificity'][0]:.4f}–{train_cis['Specificity'][1]:.4f})",
+        'Brier Score': f"{train_brier:.4f}",
+        'Calibration Intercept': f"{train_int:.4f}",
+        'Calibration Slope': f"{train_slope:.4f}",
         'Optimal Threshold': f"{train_opt_thresh:.4f}"
     })
 
@@ -1040,6 +1058,9 @@ for name, (model_class, _) in models_info.items():
         'F1-Score': f"{test_f1:.4f} (95% CI: {test_cis['F1'][0]:.4f}–{test_cis['F1'][1]:.4f})",
         'Sensitivity': f"{test_sens:.4f} (95% CI: {test_cis['Sensitivity'][0]:.4f}–{test_cis['Sensitivity'][1]:.4f})",
         'Specificity': f"{test_spec:.4f} (95% CI: {test_cis['Specificity'][0]:.4f}–{test_cis['Specificity'][1]:.4f})",
+        'Brier Score': f"{test_brier:.4f}",
+        'Calibration Intercept': f"{test_int:.4f}",
+        'Calibration Slope': f"{test_slope:.4f}",
         'Optimal Threshold': f"{opt_threshold:.4f}"
     })
 

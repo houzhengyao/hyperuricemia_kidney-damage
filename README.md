@@ -39,7 +39,7 @@ python hyperuricemia_kidney-damage.py
 Note: All stochastic operations (splitting, cross-validation, Boruta, and model training) are anchored to a fixed random seed (RANDOM_STATE = 42) to guarantee exact computational reproducibility.
 
 ## Data Availability and Ethical Statement
-Due to patient privacy protection and institutional ethical regulations (approved by the Medical Ethics Committee of Sichuan Academy of Medical Sciences & Sichuan Provincial People's Hospital), the raw clinical records cannot be publicly deposited.
+Due to patient privacy protection and institutional ethical regulations, the raw clinical records cannot be publicly deposited.
 
 1.Pipeline Verification: A fully de-identified Synthetic data.xlsx is provided in this repository to facilitate code verification and reproduce the analytical workflow.
 
